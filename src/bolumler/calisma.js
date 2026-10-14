@@ -13,6 +13,7 @@ import { isteklerModali } from './istekler.js';
 import { commitModali, farkSatirSinifi } from './commit.js';
 import { ciModali, ciRozeti } from './ci.js';
 import { cihazAkisi } from './hesap.js';
+import { kimlikModali } from './kimlik.js';
 import { surumlerModali } from './surumler.js';
 
 const DURUM_ETIKETI = {
@@ -342,6 +343,7 @@ export function calismaKur(kapsayici) {
         surumler: () => surumlerModali({ url: webAdresi(c.bilgi.origin), ad: repoYolu(c.bilgi.origin) }, baglam),
         ciAc: () => ciModali({ url: webAdresi(c.bilgi.origin), ad: repoYolu(c.bilgi.origin) }, c.bilgi.dal),
         kimlik: () => islem('kimlik', () => api.kimlikAyarla(c.kok)),
+        kimlikSec: () => kimlikModali({ kok: c.kok, sonra: () => yenile() }),
         yayinla: () => yayinlaModali(),
         bagla: () => baglaModali(),
         baglantiKaldir: () => baglantiyiKaldir(),
@@ -596,7 +598,7 @@ function uyarilar(b) {
         parcalar.push(html`<div class="bilgi-kutusu">
             ${simge('kullanici', 18)}
             <div><strong>Git kimliği ayarlı değil.</strong><p>Commit oluşturabilmek için bir ad ve e-posta gerekiyor.</p></div>
-            <button class="dugme dugme-sessiz ${c.mesgul === 'kimlik' ? 'yukleniyor' : ''}" data-eylem="kimlik" type="button" ${c.mesgul ? 'disabled' : ''}>GitHub hesabımla ayarla</button>
+            <button class="dugme dugme-sessiz" data-eylem="kimlikSec" type="button" ${c.mesgul ? 'disabled' : ''}>${simge('kullanici', 14)} Kimliği seç</button>
         </div>`);
     }
     return parcalar;
@@ -922,6 +924,8 @@ function klasorOgeleri(alan, yol) {
         { etiket: 'Editörde aç', simge: 'kod', fn: () => hariciAc(alan, yol, 'editor') },
         { etiket: 'Dosya yöneticisinde göster', simge: 'dis', fn: () => revealItemInDir(tamYol(alan, yol)).catch(hataBildir) },
         { etiket: 'Yolu kopyala', simge: 'kopya', fn: () => yoluKopyala(alan, yol) },
+        !yol && alan.bilgi?.gitMi && '-',
+        !yol && alan.bilgi?.gitMi && { etiket: 'Commit kimliği…', simge: 'kullanici', fn: () => kimlikModali({ kok: alan.kok, sonra: () => yenile(alan) }) },
     ];
 }
 

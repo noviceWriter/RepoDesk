@@ -5,6 +5,7 @@ import { bildir, hataBildir, modalAc, onayla } from '../lib/bilesen.js';
 import { html, panoyaKopyala } from '../lib/dom.js';
 import { simge } from '../lib/simge.js';
 import { ayarlar } from '../ayarlar.js';
+import { kimlikModali } from './kimlik.js';
 
 /** Yeni sürüm bildirimi: varsa doğrudan .deb / .AppImage bağlantısı, yoksa release sayfası. */
 export function guncellemeBildir(g) {
@@ -105,6 +106,12 @@ export function ayarlarModali() {
             <label class="alan">Terminal komutu <span class="istege-bagli">boş bırakılırsa otomatik bulunur</span>
                 <input name="terminalKomutu" value="${ayarlar.al('terminalKomutu')}" placeholder="gnome-terminal" spellcheck="false">
             </label>
+            <div class="alan">Commit kimliği <span class="istege-bagli">commit’lerinde görünen ad</span>
+                <div class="kimlik-satir">
+                    <span data-kimlik-ozet class="kimlik-ozet">…</span>
+                    <button class="dugme dugme-sessiz" data-kimlik-degistir type="button">${simge('kullanici', 14)} Değiştir</button>
+                </div>
+            </div>
             <fieldset class="alan hakkinda">
                 <legend>Hakkında ve güncellemeler</legend>
                 <div class="sahiplik">
@@ -132,6 +139,12 @@ export function ayarlarModali() {
             getVersion().then((s) => { kok.querySelector('[data-surum]').textContent = `v${s}`; }).catch(() => {});
             kok.querySelectorAll('[data-ac]').forEach((d) => d.addEventListener('click', () => openUrl(d.dataset.ac).catch(hataBildir)));
             kok.querySelector('[data-gunluk]').addEventListener('click', gunlukModali);
+            const ozet = kok.querySelector('[data-kimlik-ozet]');
+            const kimlikYukle = () => api.kimlikBilgisi(null)
+                .then((b) => { ozet.textContent = b.gecerliAd ? `${b.gecerliAd} <${b.gecerliEposta}>` : 'Ayarlı değil'; })
+                .catch(() => { ozet.textContent = 'Okunamadı'; });
+            kimlikYukle();
+            kok.querySelector('[data-kimlik-degistir]').addEventListener('click', () => kimlikModali({ sonra: kimlikYukle }));
             kok.querySelector('[data-guncelle]').addEventListener('click', async (e) => {
                 const depo = kok.querySelector('[name="guncellemeDeposu"]').value.trim();
                 if (!depo) { bildir('Önce güncelleme deposunu yaz (ör. noviceWriter/RepoDesk).', { tur: 'hata' }); return; }

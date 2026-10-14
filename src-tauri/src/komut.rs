@@ -82,7 +82,7 @@ pub fn calistir(program: &str, args: &[&str], dizin: Option<&Path>) -> Result<Ci
         stdout: String::from_utf8_lossy(&cikti.stdout).into_owned(),
         stderr: String::from_utf8_lossy(&cikti.stderr).into_owned(),
     };
-    crate::gunluk::komut(program, args, bas.elapsed(), sonuc.basarili, &sonuc.hata());
+    crate::gunluk::komut(program, args, bas.elapsed(), sonuc.basarili, &sonuc.stderr);
     Ok(sonuc)
 }
 

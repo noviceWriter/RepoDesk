@@ -79,10 +79,11 @@ pub fn yaz(seviye: Seviye, kaynak: &str, mesaj: &str) {
     }
 }
 
-/// Dış komut çalıştırıldıktan sonra çağrılır. Başarısız komutlar her zaman, değişiklik yapan
-/// komutlar başarılıysa da yazılır; sık tekrarlanan salt okuma sorguları günlüğü doldurmasın diye atlanır.
+/// Dış komut çalıştırıldıktan sonra çağrılır. Değişiklik yapan komutlar her zaman yazılır.
+/// Sık tekrarlanan salt okuma sorguları ise yalnızca gerçek bir hata mesajıyla başarısız olursa yazılır;
+/// ör. `rev-parse --verify MERGE_HEAD` gibi "yok" cevabını çıkış koduyla veren yoklamalar atlanır.
 pub fn komut(program: &str, args: &[&str], sure: Duration, basarili: bool, hata: &str) {
-    if basarili && salt_okuma(program, args) {
+    if salt_okuma(program, args) && (basarili || hata.trim().is_empty()) {
         return;
     }
     let ms = sure.as_millis();
@@ -90,7 +91,8 @@ pub fn komut(program: &str, args: &[&str], sure: Duration, basarili: bool, hata:
     if basarili {
         yaz(Seviye::Bilgi, "komut", &format!("{komut} ✓ {ms} ms"));
     } else {
-        yaz(Seviye::Uyari, "komut", &format!("{komut} ✗ {ms} ms — {}", kisalt(hata.trim(), 800)));
+        let hata = if hata.trim().is_empty() { "(hata mesajı yok)" } else { hata.trim() };
+        yaz(Seviye::Uyari, "komut", &format!("{komut} ✗ {ms} ms — {}", kisalt(hata, 800)));
     }
 }
 
@@ -105,7 +107,8 @@ fn salt_okuma(program: &str, args: &[&str]) -> bool {
             | "merge-base" | "describe" | "check-ignore" | "ls-remote" => true,
             // Ad verilirse dal/etiket oluşturur; yalnızca listeleme salt okumadır.
             "branch" | "tag" => !var(&["-d", "-D", "-m", "-M", "-a", "-f", "--delete"]) && (konumlu.len() == 1 || var(&["--list", "-l"])),
-            "config" => var(&["--get", "--get-regexp", "-l", "--list"]),
+            // `config anahtar` okur, `config anahtar değer` yazar.
+            "config" => var(&["--get", "--get-regexp", "-l", "--list"]) || (konumlu.len() == 2 && !var(&["--unset", "--add", "--unset-all"])),
             "remote" => matches!(ikinci, "" | "get-url" | "show"),
             "symbolic-ref" => konumlu.len() <= 2,
             _ => false,
@@ -250,6 +253,8 @@ mod testler {
         assert!(!salt_okuma("git", &["branch", "yeni-dal"]));
         assert!(!salt_okuma("git", &["push", "origin", "main"]));
         assert!(!salt_okuma("git", &["branch", "-D", "eski"]));
+        assert!(salt_okuma("git", &["config", "user.email"]));
+        assert!(!salt_okuma("git", &["config", "user.email", "a@b.c"]));
         assert!(salt_okuma("gh", &["pr", "list", "--json", "x"]));
         assert!(!salt_okuma("gh", &["pr", "merge", "3"]));
         assert!(salt_okuma("gh", &["api", "user"]));

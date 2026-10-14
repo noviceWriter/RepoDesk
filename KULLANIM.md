@@ -148,8 +148,23 @@ Henüz GitHub'da olmayan bir projeyi açtığında iki seçenek çıkar:
   **Şifre ve gizli anahtar içeren dosyaları yüklemediğinden emin ol.**
 - **Mevcut repoya bağla:** GitHub'da zaten boş ya da var olan bir repoya bağlar.
 
-Commit atarken “Git kimliği ayarlı değil” uyarısı çıkarsa **Kimliği GitHub hesabımla ayarla** butonuna bas.
-Commit'lerde GitHub kullanıcı adın görünür.
+Commit atarken “Git kimliği ayarlı değil” uyarısı çıkarsa **Kimliği seç** butonuna bas
+([Commit kimliği](#commit-kimliği-commitlerde-hangi-ad-görünür) bölümüne bak).
+
+### Commit kimliği: commit'lerde hangi ad görünür?
+
+Her commit'e bir **ad** ve **e-posta** yazılır. GitHub'a gönderdiğinde bunları **herkes görebilir**.
+Hiç ayarlamadıysan git, Linux'u kurarken yazdığın gerçek adını kullanır. Bu yüzden
+adını hiç yazmadığın halde commit'lerde görebilirsin.
+
+**Ayarlar → Commit kimliği → Değiştir** ile şunlardan birini seç:
+- **GitHub kullanıcı adın + gizli e-posta** (önerilen): Gerçek adın ve e-postan görünmez.
+- **GitHub profilindeki ad + gizli e-posta**
+- **Kendim yazacağım**: İstediğin ad ve e-posta.
+
+Sadece bir proje için farklı bir kimlik istersen çalışma alanının üst kısmına sağ tıkla → **Commit kimliği…**
+ve **Sadece bu projede**'yi seç. Değişiklik yalnızca bundan sonraki commit'leri etkiler.
+Daha önce gönderilmiş commit'ler değişmez.
 
 ---
 
@@ -245,6 +260,7 @@ Silme yalnızca GitHub'daki kopyayı siler. Bilgisayarındaki klasöre dokunulma
 Sağ üstteki dişli simgesi ya da `Ctrl+,`:
 - **Tema:** Sistem, Açık, Koyu.
 - **GitHub'ı otomatik kontrol et:** Ne sıklıkla yeni commit kontrolü yapılacağı.
+- **Commit kimliği:** Commit'lerinde görünen ad ve e-posta ([ayrıntılar](#commit-kimliği-commitlerde-hangi-ad-görünür)).
 - **Kod editörü / Terminal komutu:** “Editörde aç” ve “Terminalde aç” hangi programı açsın. Boş bırakırsan otomatik bulunur.
 - **Hakkında ve güncellemeler:** Sürüm numarası, lisans, bu kılavuz ve uygulama günlüğü.
   **Şimdi kontrol et** yeni sürüm olup olmadığına bakar. Varsa indirme bağlantısı verir.

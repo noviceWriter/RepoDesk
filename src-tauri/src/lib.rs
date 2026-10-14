@@ -10,6 +10,7 @@ mod guncelleme;
 mod gunluk;
 mod harici;
 mod istek;
+mod kimlik;
 mod surum;
 mod komut;
 mod yerel;
@@ -53,6 +54,8 @@ pub fn run() {
             gunluk::gunluk_oku,
             gunluk::gunluk_temizle,
             gunluk::gunluk_klasoru_ac,
+            kimlik::kimlik_bilgisi,
+            kimlik::kimlik_kaydet,
             yerel::yerel_durum,
             yerel::yerel_dosyalar,
             yerel::yerel_fark,

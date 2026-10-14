@@ -758,6 +758,15 @@ button.cip-dal:hover { border-color: var(--vurgu); color: var(--vurgu); }
 .surum-dosya-secimi { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; font-weight: 500; }
 .hakkinda { margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--cizgi); }
 .hakkinda .alan { margin-top: 10px; }
+.kimlik-satir { display: flex; align-items: center; gap: 10px; margin-top: 7px; }
+.kimlik-ozet { flex: 1; min-width: 0; font: 500 12px var(--mono); color: var(--metin-2); overflow-wrap: anywhere; }
+.kimlik-yukleniyor { display: grid; place-items: center; min-height: 120px; }
+.kimlik-simdi { padding: 12px 14px; border: 1px solid var(--cizgi); border-radius: var(--r-o); background: var(--zemin); }
+.kimlik-simdi .ust-baslik { margin-bottom: 6px; }
+.kimlik-ad { margin: 0; overflow-wrap: anywhere; }
+.kimlik-ad code { color: var(--metin-3); font-size: 12px; }
+.kimlik-ozel { margin-top: 4px; }
+.secenek-kart .ipucu { margin-top: 2px; }
 .sahiplik { display: flex; gap: 12px; align-items: center; margin-top: 8px; }
 .sahiplik img { border-radius: 10px; flex-shrink: 0; }
 .sahiplik p { margin: 0; }
