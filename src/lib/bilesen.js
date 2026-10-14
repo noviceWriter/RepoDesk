@@ -1,4 +1,4 @@
-import { ask } from '@tauri-apps/plugin-dialog';
+import { api } from './api.js';
 import { ciz, html, metin } from './dom.js';
 import { simge } from './simge.js';
 
@@ -36,16 +36,70 @@ export function bildir(mesaj, { tur = 'bilgi', eylem = null, sure } = {}) {
     return kapat;
 }
 
-export const hataBildir = (hata) => bildir(hata?.message || String(hata), { tur: 'hata' });
+/** Günlüğe yazar; günlük yazılamazsa sessizce geçer (asla yeni hata üretmez). */
+export function gunlugeYaz(seviye, kaynak, mesaj) {
+    api.gunlukYaz(seviye, kaynak, String(mesaj)).catch(() => {});
+}
+
+export function hataBildir(hata) {
+    const mesaj = hata?.message || String(hata);
+    gunlugeYaz('hata', 'arayüz', `Kullanıcıya gösterilen hata: ${mesaj}`);
+    return bildir(mesaj, { tur: 'hata' });
+}
 
 // ---------- Onay ----------
 
-export async function onayla(mesaj, { baslik = 'RepoDesk', tamam = 'Evet', iptal = 'Vazgeç', tehlikeli = false } = {}) {
-    try {
-        return await ask(mesaj, { title: baslik, kind: tehlikeli ? 'warning' : 'info', okLabel: tamam, cancelLabel: iptal });
-    } catch {
-        return window.confirm(mesaj);
-    }
+/**
+ * Uygulamanın kendi tasarımıyla onay penceresi (sistem penceresi yerine).
+ * Mesajdaki boş satırlar ayrı paragraf olur. Enter onaylar, Esc / dışarı tıklama vazgeçer.
+ * Tehlikeli işlemlerde odak "Vazgeç"te başlar ki Enter yanlışlıkla onaylamasın.
+ * @returns {Promise<boolean>}
+ */
+export function onayla(mesaj, { baslik = 'Emin misin?', tamam = 'Evet', iptal = 'Vazgeç', tehlikeli = false } = {}) {
+    return new Promise((coz) => {
+        const oncekiOdak = document.activeElement;
+        const paragraflar = String(mesaj).split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+        const arka = document.createElement('div');
+        arka.className = 'modal-arka';
+        ciz(arka, html`
+            <div class="modal modal-onay ${tehlikeli ? 'onay-tehlikeli' : ''}" role="alertdialog" aria-modal="true" aria-labelledby="onay-baslik-${yigin.length}" aria-describedby="onay-metin-${yigin.length}">
+                <div class="onay-ust">
+                    <span class="onay-ikon">${simge(tehlikeli ? 'uyari' : 'degisim', 20)}</span>
+                    <div class="onay-icerik">
+                        <h2 id="onay-baslik-${yigin.length}">${baslik}</h2>
+                        <div id="onay-metin-${yigin.length}" class="onay-metin">${paragraflar.map((p) => html`<p>${p}</p>`)}</div>
+                    </div>
+                </div>
+                <footer class="modal-alt">
+                    <div class="modal-dugmeler">
+                        <button class="dugme dugme-sessiz onay-hayir" type="button">${iptal}</button>
+                        <button class="dugme ${tehlikeli ? 'dugme-tehlike' : ''} onay-evet" type="button">${tamam}</button>
+                    </div>
+                </footer>
+            </div>`);
+        const modal = arka.firstElementChild;
+        const kayit = {
+            kok: modal,
+            kapat(sonuc = false) {
+                const sira = yigin.indexOf(kayit);
+                if (sira < 0) return;
+                yigin.splice(sira, 1);
+                arka.classList.add('kapaniyor');
+                setTimeout(() => arka.remove(), 140);
+                if (oncekiOdak?.isConnected) oncekiOdak.focus();
+                coz(sonuc);
+            },
+        };
+        yigin.push(kayit);
+        modal.querySelector('.onay-evet').addEventListener('click', () => kayit.kapat(true));
+        modal.querySelector('.onay-hayir').addEventListener('click', () => kayit.kapat(false));
+        arka.addEventListener('mousedown', (e) => { if (e.target === arka) kayit.kapat(false); });
+        modal.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') odakTuzagi(modal, e);
+        });
+        document.body.appendChild(arka);
+        modal.querySelector(tehlikeli ? '.onay-hayir' : '.onay-evet').focus();
+    });
 }
 
 // ---------- Modal ----------

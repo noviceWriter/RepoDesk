@@ -71,12 +71,19 @@ pub fn calistir(program: &str, args: &[&str], dizin: Option<&Path>) -> Result<Ci
     if let Some(dizin) = dizin {
         komut.current_dir(dizin);
     }
-    let cikti = komut.output().map_err(|e| baslatma_hatasi(program, e))?;
-    Ok(Cikti {
+    let bas = std::time::Instant::now();
+    let cikti = komut.output().map_err(|e| {
+        let hata = baslatma_hatasi(program, e);
+        crate::gunluk::komut(program, args, bas.elapsed(), false, &hata);
+        hata
+    })?;
+    let sonuc = Cikti {
         basarili: cikti.status.success(),
         stdout: String::from_utf8_lossy(&cikti.stdout).into_owned(),
         stderr: String::from_utf8_lossy(&cikti.stderr).into_owned(),
-    })
+    };
+    crate::gunluk::komut(program, args, bas.elapsed(), sonuc.basarili, &sonuc.hata());
+    Ok(sonuc)
 }
 
 pub fn gh(args: &[&str]) -> Result<Cikti, String> {

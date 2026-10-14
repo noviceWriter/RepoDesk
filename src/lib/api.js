@@ -71,6 +71,10 @@ export const api = {
     repoArsivle: (repo, arsivle) => cagir('repo_arsivle', { repo, arsivle }),
     izinEkle: (kapsam) => cagir('izin_ekle', { kapsam }),
     guncellemeKontrol: (repo) => cagir('guncelleme_kontrol', { repo }),
+    gunlukYaz: (seviye, kaynak, mesaj) => cagir('gunluk_yaz', { seviye, kaynak, mesaj }),
+    gunlukOku: () => cagir('gunluk_oku'),
+    gunlukTemizle: () => cagir('gunluk_temizle'),
+    gunlukKlasoruAc: () => cagir('gunluk_klasoru_ac'),
 
     istekler: (repo, tur, durum) => cagir('istek_listele', { repo, tur, durum }),
     varsayilanDal: (repo) => cagir('varsayilan_dal', { repo }),

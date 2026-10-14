@@ -1,7 +1,7 @@
 import { open } from '@tauri-apps/plugin-dialog';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import './style.css';
-import { acikModalVar, enUstModaliKapat } from './lib/bilesen.js';
+import { acikModalVar, enUstModaliKapat, gunlugeYaz } from './lib/bilesen.js';
 import { ciz, depola, eylemler, html } from './lib/dom.js';
 import { simge } from './lib/simge.js';
 import { durum, dinle } from './durum.js';
@@ -9,6 +9,10 @@ import { calismaAlani, calismaKur } from './bolumler/calisma.js';
 import { girisYap, hesabiYukle, hesapKur } from './bolumler/hesap.js';
 import { istatistikCiz, kutuphaneKur, repolariYukle, yeniRepoModali } from './bolumler/kutuphane.js';
 import { acilistaGuncellemeKontrol, ayarlarModali } from './bolumler/ayarlarModali.js';
+
+// Beklenmeyen arayüz hataları da günlüğe düşsün (hata ayıklamak için).
+window.addEventListener('error', (e) => gunlugeYaz('hata', 'arayüz', `${e.message} (${e.filename?.split('/').pop() || '?'}:${e.lineno})`));
+window.addEventListener('unhandledrejection', (e) => gunlugeYaz('hata', 'arayüz', `Yakalanmamış hata: ${e.reason?.message || e.reason}`));
 
 // ---------- Tema ----------
 

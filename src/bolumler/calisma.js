@@ -12,6 +12,7 @@ import { cakismaModali } from './cakisma.js';
 import { isteklerModali } from './istekler.js';
 import { commitModali, farkSatirSinifi } from './commit.js';
 import { ciModali, ciRozeti } from './ci.js';
+import { cihazAkisi } from './hesap.js';
 import { surumlerModali } from './surumler.js';
 
 const DURUM_ETIKETI = {
@@ -253,6 +254,26 @@ function pushSonrasiCi(alan) {
     setTimeout(() => ciGuncelle(alan, true), 6000);
 }
 
+const WORKFLOW_IZNI = 'IZIN_GEREKLI:workflow:';
+
+function workflowIzniIste() {
+    cihazAkisi({
+        ust: 'GITHUB İZNİ',
+        baslik: '“workflow” iznini ver',
+        aciklama: 'Tarayıcıda açılan sayfaya kodu gir ve izni onayla. Sonra göndermeyi tekrar dene.',
+        baslat: () => api.izinEkle('workflow'),
+        basarili: () => bildir('İzin verildi. Şimdi tekrar gönderebilirsin.', { tur: 'basari' }),
+    });
+}
+
+/** Push hatalarını gösterir; GitHub "workflow" izni istiyorsa bildirime “İzin ver” butonu ekler. */
+function islemHatasiBildir(e) {
+    const mesaj = e?.message || String(e);
+    if (!mesaj.startsWith(WORKFLOW_IZNI)) return hataBildir(e);
+    hataBildir(new Error(mesaj.slice(WORKFLOW_IZNI.length)));
+    return bildir('Bu gönderim için GitHub’ın ek bir izni gerekiyor.', { tur: 'bilgi', sure: 20000, eylem: { metin: 'İzin ver', fn: workflowIzniIste } });
+}
+
 async function islem(ad, fn, alan = c) {
     if (alan.mesgul) return false;
     alan.mesgul = ad;
@@ -263,7 +284,7 @@ async function islem(ad, fn, alan = c) {
         if (typeof sonuc === 'string' && sonuc) bildir(sonuc, { tur: sonuc.includes('çakışma') ? 'bilgi' : 'basari' });
         basarili = true;
     } catch (e) {
-        hataBildir(e);
+        islemHatasiBildir(e);
     }
     alan.mesgul = '';
     try { await yenile(alan); } catch (e) { hataBildir(e); panelCiz(); }
@@ -1074,6 +1095,10 @@ async function yayinlaModali() {
                 aciklama: kok.querySelector('[name="aciklama"]').value,
                 haricler,
                 mesaj: kok.querySelector('[name="mesaj"]')?.value || '',
+            }).catch((e) => {
+                if (!e.message.startsWith(WORKFLOW_IZNI)) throw e;
+                islemHatasiBildir(e);
+                throw new Error(e.message.slice(WORKFLOW_IZNI.length));
             });
             await yenile();
             const web = webAdresi(c.bilgi?.origin);

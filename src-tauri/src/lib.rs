@@ -7,6 +7,7 @@ mod dal;
 mod gecmis;
 mod github;
 mod guncelleme;
+mod gunluk;
 mod harici;
 mod istek;
 mod surum;
@@ -31,6 +32,10 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .manage(github::GirisSureci::default())
+        .setup(|app| {
+            gunluk::baslat(app.handle());
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             github::repo_listele,
             github::hesap_bilgisi,
@@ -44,6 +49,10 @@ pub fn run() {
             github::repo_sil,
             github::repo_arsivle,
             guncelleme::guncelleme_kontrol,
+            gunluk::gunluk_yaz,
+            gunluk::gunluk_oku,
+            gunluk::gunluk_temizle,
+            gunluk::gunluk_klasoru_ac,
             yerel::yerel_durum,
             yerel::yerel_dosyalar,
             yerel::yerel_fark,

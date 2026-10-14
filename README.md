@@ -4,6 +4,8 @@ GitHub depoların için hafif bir masaüstü çalışma alanı. Tauri 2 + saf Ja
 GitHub işlemleri resmi [GitHub CLI (`gh`)](https://cli.github.com) üzerinden, yerel işlemler `git` ile yapılır.
 Şifren veya token'ın uygulamaya hiç girilmez.
 
+📘 **Kullanıcılar için adım adım rehber: [KULLANIM.md](KULLANIM.md)**
+
 ## Özellikler
 
 - **Kütüphane** — tüm depolar; arama (ad, açıklama, dil), Public/Private/Fork/Arşiv filtreleri, sıralama, istatistikler
@@ -29,6 +31,7 @@ GitHub işlemleri resmi [GitHub CLI (`gh`)](https://cli.github.com) üzerinden, 
 - **Repo silme / arşivleme** — kart menüsünden; silmek için tam adı yazarak onay, gerekirse tarayıcıdan “delete_repo” izni
 - **Güncelleme bildirimi** — Ayarlar'da güncelleme deposu girilirse açılışta yeni sürüm kontrol edilir
 - **Giriş** — tarayıcı üzerinden cihaz kodu ile; kod uygulamada gösterilir ve panoya kopyalanır
+- **Uygulama günlüğü** — işlemler ve hatalar dosyaya yazılır (token'lar gizlenir); Ayarlar → Uygulama günlüğü
 - Açık/koyu tema, son açılan klasörler, pencere odağa gelince otomatik yenileme
 
 ### Kısayollar
@@ -93,6 +96,7 @@ src-tauri/src/
   istek.rs             pull request ve issue işlemleri
   gecmis.rs            commit ayrıntısı, commit farkı, tersine çevirme
   harici.rs            terminal / kod editöründe açma, dosya taşıma
+  gunluk.rs            uygulama günlüğü (log): dönen dosya, gizli bilgi maskeleme
   ci.rs                GitHub Actions / kontrol durumu
   surum.rs             etiketler ve release'ler
   guncelleme.rs        uygulamanın kendi güncelleme denetimi

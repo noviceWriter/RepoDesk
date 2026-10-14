@@ -48,7 +48,12 @@ fn baslat(program: &Path, args: &[String], dizin: &Path) -> Result<(), String> {
     let mut komut = Command::new(program);
     ortami_temizle(&mut komut);
     komut.args(args).current_dir(dizin).stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null());
-    let mut cocuk = komut.spawn().map_err(|e| format!("{} başlatılamadı: {e}", program.display()))?;
+    let mut cocuk = komut.spawn().map_err(|e| {
+        let hata = format!("{} başlatılamadı: {e}", program.display());
+        crate::gunluk::yaz(crate::gunluk::Seviye::Hata, "harici", &hata);
+        hata
+    })?;
+    crate::gunluk::yaz(crate::gunluk::Seviye::Bilgi, "harici", &format!("{} {} ({})", program.display(), args.join(" "), dizin.display()));
     std::thread::spawn(move || {
         let _ = cocuk.wait();
     });
@@ -101,6 +106,13 @@ fn terminal_ac(dizin: &Path, ayar: &str) -> Result<(), String> {
         }
     }
     Err("Bilgisayarında desteklenen bir terminal bulunamadı. Ayarlar'dan terminal komutunu belirtebilirsin.".into())
+}
+
+/// Klasörü dosya yöneticisinde açar.
+pub(crate) fn klasoru_ac(klasor: &Path) -> Result<(), String> {
+    let program = if cfg!(target_os = "macos") { "open" } else if cfg!(windows) { "explorer" } else { "xdg-open" };
+    let yol = bul(program).unwrap_or_else(|| PathBuf::from(program));
+    baslat(&yol, &[klasor.to_string_lossy().into_owned()], klasor)
 }
 
 fn editor_ac(kok: &Path, hedef: &Path, ayar: &str) -> Result<(), String> {

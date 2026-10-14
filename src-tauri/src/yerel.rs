@@ -280,8 +280,13 @@ fn metin_dosyasi_oku(yol: &Path, sinir: u64) -> Result<String, String> {
     String::from_utf8(bayt).map_err(|_| "Dosya UTF-8 metin değil; bu arayüzde açılamaz.".into())
 }
 
+/// Arayüz bu önekle başlayan hatada “İzin ver” butonu gösterir.
+pub(crate) const WORKFLOW_IZNI: &str = "IZIN_GEREKLI:workflow:";
+
 pub(crate) fn git_hata_acikla(hata: String) -> String {
-    if hata.contains("Please tell me who you are") || hata.contains("user.email") {
+    if hata.contains("`workflow` scope") {
+        format!("{WORKFLOW_IZNI}Gönderilenler arasında bir GitHub Actions dosyası (.github/workflows) var. GitHub bunun için ayrıca “workflow” izni istiyor. “İzin ver” ile bir kez onayla, sonra tekrar gönder.\n\n{hata}")
+    } else if hata.contains("Please tell me who you are") || hata.contains("user.email") {
         "Git kimliği ayarlı değil. Çalışma alanındaki “Kimliği GitHub hesabımla ayarla” butonunu kullanın.".into()
     } else if hata.contains("[rejected]") || hata.contains("fetch first") || hata.contains("non-fast-forward") {
         format!("Uzak depoda sizde olmayan değişiklikler var. Önce Pull yapın.\n\n{hata}")
@@ -588,6 +593,13 @@ pub async fn dosya_sil(kok: String, yol: String) -> Result<String, String> {
         Ok(format!("{} silindi.", goreli_metin(&kok, &hedef)))
     })
     .await
+}
+
+#[cfg(test)]
+#[test]
+fn workflow_izni_hatasi_taninir() {
+    let hata = "! [remote rejected] HEAD -> main (refusing to allow an OAuth App to create or update workflow `.github/workflows/a.yml` without `workflow` scope)".to_string();
+    assert!(git_hata_acikla(hata).starts_with(WORKFLOW_IZNI));
 }
 
 #[cfg(test)]

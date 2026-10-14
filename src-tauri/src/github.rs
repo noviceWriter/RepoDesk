@@ -192,12 +192,16 @@ fn cihaz_akisi(app: &AppHandle, args: &[&str], ne: &str) -> Result<(), String> {
     let stdout = okuyucu.join().unwrap_or_default();
 
     let Some(mut cocuk) = surec.kilit().take() else {
+        crate::gunluk::yaz(crate::gunluk::Seviye::Bilgi, "giriş", &format!("{ne} iptal edildi."));
         return Err(format!("{ne} iptal edildi."));
     };
     if !cocuk.wait().map(|durum| durum.success()).unwrap_or(false) {
         let detay = if gunluk.trim().is_empty() { stdout } else { gunluk };
-        return Err(format!("{ne} tamamlanamadı. {}", detay.trim()));
+        let hata = format!("{ne} tamamlanamadı. {}", detay.trim());
+        crate::gunluk::yaz(crate::gunluk::Seviye::Uyari, "giriş", &hata);
+        return Err(hata);
     }
+    crate::gunluk::yaz(crate::gunluk::Seviye::Bilgi, "giriş", &format!("{ne} tamamlandı ({})", args.join(" ")));
     Ok(())
 }
 
@@ -212,12 +216,12 @@ pub async fn oturum_ac(app: AppHandle) -> Result<Kullanici, String> {
     .await
 }
 
-/// Oturuma ek bir izin (kapsam) ekler; ör. repo silmek için `delete_repo`.
+/// Oturuma ek bir izin (kapsam) ekler; ör. repo silmek için `delete_repo`, Actions dosyası göndermek için `workflow`.
 #[tauri::command]
 pub async fn izin_ekle(app: AppHandle, kapsam: String) -> Result<(), String> {
     arka_plan(move || {
         // Yalnızca arayüzün gerçekten istediği izinler.
-        if !matches!(kapsam.as_str(), "delete_repo") {
+        if !matches!(kapsam.as_str(), "delete_repo" | "workflow") {
             return Err("Bu izin istenemez.".into());
         }
         cihaz_akisi(&app, &["auth", "refresh", "--hostname", "github.com", "--scopes", &kapsam], "İzin verme")
